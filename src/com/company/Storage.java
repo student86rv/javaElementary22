@@ -11,11 +11,11 @@ public interface Storage {
 
     void removeUserByName(String name) throws SQLException;
 
-    void addUser(User user) throws SQLException;
+    void addUser(Student student) throws SQLException;
 
-    void updateUser(User user) throws SQLException;
+    void updateUser(Student student) throws SQLException;
 
-    User getUser(int id) throws SQLException;
+    Student getUser(int id) throws SQLException;
 
-    List<User> getAllUsers() throws SQLException;
+    List<Student> getAllUsers() throws SQLException;
 }

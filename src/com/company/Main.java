@@ -6,31 +6,31 @@ public class Main {
 
     public static void main(String[] args) {
 
+        Group java = new Group();
+        Student javaStudent1 = new Student("Alex", 25);
+        java.getStudents().add(javaStudent1);
+
+        Student javaStudent2 = new Student("Oleg", 20);
+        java.getStudents().add(javaStudent2);
+
+        Group cpp = new Group();
+        Student cppStudent1 = new Student("Dmitrii", 27);
+        cpp.getStudents().add(cppStudent1);
+
+        Student cppStudent2 = new Student("Anna", 19);
+        cpp.getStudents().add(cppStudent2);
+
+        Student max = new Student("Max", 29);
+        java.getStudents().add(max);
+        cpp.getStudents().add(max);
+
         try {
             StorageDao storageDao = new StorageDao();
             storageDao.removeAll();
 
-            storageDao.addUser(new User("Alex", 25));
-            storageDao.addUser(new User("Oleg", 20));
-            storageDao.addUser(new User("Dmitrii", 27));
-            storageDao.addUser(new User("Anna", 19));
-            storageDao.addUser(new User("Andrey", 31));
-            System.out.println("Users: " + storageDao.getAllUsers());
+            storageDao.addGroup(java);
+            storageDao.addGroup(cpp);
 
-            storageDao.updateUser(new User(1, "Victor", 24));
-            System.out.println("Update user 1...");
-            System.out.println("Users: " + storageDao.getAllUsers());
-
-            System.out.println("Get user 2...");
-            System.out.println("User 2: " + storageDao.getUser(2));
-
-            storageDao.removeUser(3);
-            System.out.println("Remove user 3...");
-            System.out.println("Users: " + storageDao.getAllUsers());
-
-            storageDao.removeUserByName("Anna");
-            System.out.println("Remove user Anna...");
-            System.out.println("Users: " + storageDao.getAllUsers());
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -18,12 +18,14 @@ public class StorageDao implements Storage {
 
     public StorageDao() throws SQLException {
         connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/newBase", "postgres", "student2019");
-        createUsersTable();
+        createStudentsTable();
+        createGroupsTable();
+        createStudentsInGroupsTable();
     }
 
-    private void createUsersTable() throws SQLException {
+    private void createStudentsTable() throws SQLException {
         try (Statement statement = connection.createStatement()) {
-            statement.execute("CREATE TABLE IF NOT EXISTS users (\n" +
+            statement.execute("CREATE TABLE IF NOT EXISTS students (\n" +
                     "_id SERIAL PRIMARY KEY,\n" +
                     "name varchar(100),\n" +
                     "age int\n" +
@@ -31,11 +33,32 @@ public class StorageDao implements Storage {
         }
     }
 
+    private void createGroupsTable() throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE IF NOT EXISTS groups (\n" +
+                    "_id SERIAL PRIMARY KEY,\n" +
+                    "name varchar(100),\n" +
+                    "start_date varchar(100)\n" +
+                    ");");
+        }
+    }
+
+    private void createStudentsInGroupsTable() throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE IF NOT EXISTS students_in_groups (\n" +
+                    "student_id int PRIMARY KEY,\n" +
+                    "group_id int\n" +
+
+                    ");");
+            //"CONSTRAINT pk PRIMARY KEY (student_id, LastName)" +
+        }
+    }
+
     @Override
     public void removeAll() throws SQLException {
         try (Statement statement = connection.createStatement()) {
-            int count = statement.executeUpdate("DELETE FROM users;");
-            System.out.println("Deleted " + count + " rows from table users");
+            int count = statement.executeUpdate("DELETE FROM students;");
+            System.out.println("Deleted " + count + " rows from table students");
         }
     }
 
@@ -56,58 +79,85 @@ public class StorageDao implements Storage {
     }
 
     @Override
-    public void addUser(User user) throws SQLException {
+    public void addUser(Student student) throws SQLException {
         try (Statement statement = connection.createStatement()) {
-            String request = String.format("INSERT INTO users (name, age) VALUES ('%s', '%d');",
-                                user.getName(), user.getAge());
+            String request = String.format("INSERT INTO students (name, age) VALUES ('%s', '%d');",
+                                student.getName(), student.getAge());
             statement.execute(request);
 
-            String idRequest = "SELECT COUNT(*) FROM users AS count;";
+            String idRequest = "SELECT COUNT(*) FROM students AS count;";
             ResultSet resultSet = statement.executeQuery(idRequest);
             int count = 0;
             while (resultSet.next()) {
                 count = resultSet.getInt("count");
             }
-            user.setId(count);
+            student.setId(count);
+        }
+    }
+
+    public void addGroup(Group group) throws SQLException{
+
+        try (Statement statement = connection.createStatement()) {
+            String request = String.format("INSERT INTO groups (name, start_date) VALUES ('%s', '%s');",
+                    group.getName(), group.getStartDate());
+            statement.execute(request);
+
+            String idRequest = "SELECT COUNT(*) FROM groups AS count;";
+            ResultSet resultSet = statement.executeQuery(idRequest);
+            int count = 0;
+            while (resultSet.next()) {
+                count = resultSet.getInt("count");
+            }
+            group.setId(count);
+        }
+
+        for (Student student: group.getStudents()) {
+            addUser(student);
+
+            try (Statement statement = connection.createStatement()) {
+                String request = String.format("INSERT INTO students_in_groups (student_id, group_id) VALUES ('%d', '%d');",
+                        student.getId(), group.getId());
+                statement.execute(request);
+            }
         }
     }
 
     @Override
-    public void updateUser(User user) throws SQLException {
+    public void updateUser(Student student) throws SQLException {
         try (Statement statement = connection.createStatement()) {
             String request = String.format("UPDATE users SET name = ('%s'), age = ('%d') WHERE _id = ('%d');",
-                                user.getName(), user.getAge(), user.getId());
+                                student.getName(), student.getAge(), student.getId());
             statement.execute(request);
         }
     }
 
     @Override
-    public User getUser(int id) throws SQLException {
-        User user = new User();
+    public Student getUser(int id) throws SQLException {
+        Student student = new Student();
         try (Statement statement = connection.createStatement()) {
             String request = String.format("SELECT * FROM users WHERE _id = ('%d');", id);
             ResultSet resultSet = statement.executeQuery(request);
             while (resultSet.next()) {
-                user.setId(resultSet.getInt("_id"));
-                user.setName(resultSet.getString("name"));
-                user.setAge(resultSet.getInt("age"));
+                student.setId(resultSet.getInt("_id"));
+                student.setName(resultSet.getString("name"));
+                student.setAge(resultSet.getInt("age"));
             }
         }
-        return user;
+        return student;
     }
 
     @Override
-    public List<User> getAllUsers() throws SQLException {
-        List<User> users = new ArrayList<>();
+    public List<Student> getAllUsers() throws SQLException {
+        List<Student> students = new ArrayList<>();
         try (Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM users ORDER BY _id;");
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM students ORDER BY _id;");
             while (resultSet.next()) {
                 int id = resultSet.getInt("_id");
                 String name = resultSet.getString("name");
                 int age = resultSet.getInt("age");
-                users.add(new User(id, name, age));
+                students.add(new Student(id, name, age));
             }
         }
-        return users;
+        return students;
     }
 }
