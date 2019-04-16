@@ -57,8 +57,14 @@ public class StorageDao implements Storage {
     @Override
     public void removeAll() throws SQLException {
         try (Statement statement = connection.createStatement()) {
-            int count = statement.executeUpdate("DELETE FROM students;");
-            System.out.println("Deleted " + count + " rows from table students");
+            int sCount = statement.executeUpdate("DELETE FROM students;");
+            System.out.println("Deleted " + sCount + " rows from table students");
+
+            int gCount = statement.executeUpdate("DELETE FROM groups;");
+            System.out.println("Deleted " + gCount + " rows from table groups");
+
+            int sgCount = statement.executeUpdate("DELETE FROM students_in_groups;");
+            System.out.println("Deleted " + sgCount + " rows from table students_in_groups");
         }
     }
 
