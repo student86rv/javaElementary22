@@ -31,6 +31,9 @@ public class Main {
             storageDao.addGroup(java);
             storageDao.addGroup(cpp);
 
+            System.out.println(storageDao.getUser(49));
+            System.out.println(storageDao.getUser(49).getGroups());
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

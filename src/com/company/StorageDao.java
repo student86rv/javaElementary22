@@ -46,11 +46,10 @@ public class StorageDao implements Storage {
     private void createStudentsInGroupsTable() throws SQLException {
         try (Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE IF NOT EXISTS students_in_groups (\n" +
-                    "student_id int PRIMARY KEY,\n" +
-                    "group_id int\n" +
-
+                    "student_id int,\n" +
+                    "group_id int,\n" +
+                    "PRIMARY KEY (student_id, group_id)\n" +
                     ");");
-            //"CONSTRAINT pk PRIMARY KEY (student_id, LastName)" +
         }
     }
 
@@ -97,7 +96,9 @@ public class StorageDao implements Storage {
             while (resultSet.next()) {
                 count = resultSet.getInt("count");
             }
-            student.setId(count);
+            if (student.getId() == 0) {
+                student.setId(count);
+            }
         }
     }
 
@@ -118,7 +119,10 @@ public class StorageDao implements Storage {
         }
 
         for (Student student: group.getStudents()) {
-            addUser(student);
+
+            if (student.getId() == 0) {
+                addUser(student);
+            }
 
             try (Statement statement = connection.createStatement()) {
                 String request = String.format("INSERT INTO students_in_groups (student_id, group_id) VALUES ('%d', '%d');",
@@ -141,12 +145,14 @@ public class StorageDao implements Storage {
     public Student getUser(int id) throws SQLException {
         Student student = new Student();
         try (Statement statement = connection.createStatement()) {
-            String request = String.format("SELECT * FROM users WHERE _id = ('%d');", id);
+            String request = String.format("SELECT * FROM students WHERE _id = ('%d');", id);
             ResultSet resultSet = statement.executeQuery(request);
             while (resultSet.next()) {
                 student.setId(resultSet.getInt("_id"));
                 student.setName(resultSet.getString("name"));
                 student.setAge(resultSet.getInt("age"));
+                //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                student.setGroups(getGroupsByStudentId(student.getId()));
             }
         }
         return student;
@@ -165,5 +171,26 @@ public class StorageDao implements Storage {
             }
         }
         return students;
+    }
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    private List<Group> getGroupsByStudentId(int studentId) throws SQLException {
+        List<Group> groupList = new ArrayList<>();
+        try (Statement statement = connection.createStatement()) {
+            String request = String.format("SELECT _id AS \"group_id\"," +
+                                            " name AS \"group_name\", " +
+                                            "start_date FROM groups " +
+                                            "JOIN students_in_groups " +
+                                            "ON groups._id = students_in_groups.group_id" +
+                                            " WHERE students_in_groups.student_id = ('%d');",
+                                            studentId);
+            ResultSet resultSet = statement.executeQuery(request);
+            while (resultSet.next()) {
+               int groupId = resultSet.getInt("group_id");
+               String groupName = resultSet.getString("group_name");
+               String startDate = resultSet.getString("start_date");
+               groupList.add(new Group(groupId, groupName, startDate));
+            }
+        }
+        return groupList;
     }
 }

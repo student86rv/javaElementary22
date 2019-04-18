@@ -18,6 +18,12 @@ public class Group {
         this.startDate = startDate;
     }
 
+    public Group(int id, String name, String startDate) {
+        this.id = id;
+        this.name = name;
+        this.startDate = startDate;
+    }
+
     public int getId() {
         return id;
     }
