@@ -87,7 +87,7 @@ public class StorageDao implements Storage {
     public void addUser(Student student) throws SQLException {
         try (Statement statement = connection.createStatement()) {
             String request = String.format("INSERT INTO students (name, age) VALUES ('%s', '%d');",
-                                student.getName(), student.getAge());
+                    student.getName(), student.getAge());
             statement.execute(request);
 
             String idRequest = "SELECT COUNT(*) FROM students AS count;";
@@ -102,7 +102,7 @@ public class StorageDao implements Storage {
         }
     }
 
-    public void addGroup(Group group) throws SQLException{
+    public void addGroup(Group group) throws SQLException {
 
         try (Statement statement = connection.createStatement()) {
             String request = String.format("INSERT INTO groups (name, start_date) VALUES ('%s', '%s');",
@@ -118,7 +118,7 @@ public class StorageDao implements Storage {
             group.setId(count);
         }
 
-        for (Student student: group.getStudents()) {
+        for (Student student : group.getStudents()) {
 
             if (student.getId() == 0) {
                 addUser(student);
@@ -136,7 +136,7 @@ public class StorageDao implements Storage {
     public void updateUser(Student student) throws SQLException {
         try (Statement statement = connection.createStatement()) {
             String request = String.format("UPDATE users SET name = ('%s'), age = ('%d') WHERE _id = ('%d');",
-                                student.getName(), student.getAge(), student.getId());
+                    student.getName(), student.getAge(), student.getId());
             statement.execute(request);
         }
     }
@@ -148,11 +148,11 @@ public class StorageDao implements Storage {
             String request = String.format("SELECT * FROM students WHERE _id = ('%d');", id);
             ResultSet resultSet = statement.executeQuery(request);
             while (resultSet.next()) {
-                student.setId(resultSet.getInt("_id"));
+                int studentId = resultSet.getInt("_id");
+                student.setId(studentId);
                 student.setName(resultSet.getString("name"));
                 student.setAge(resultSet.getInt("age"));
-                //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                student.setGroups(getGroupsByStudentId(student.getId()));
+                student.setGroups(getGroupsByStudentId(studentId));
             }
         }
         return student;
@@ -172,23 +172,25 @@ public class StorageDao implements Storage {
         }
         return students;
     }
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     private List<Group> getGroupsByStudentId(int studentId) throws SQLException {
         List<Group> groupList = new ArrayList<>();
         try (Statement statement = connection.createStatement()) {
             String request = String.format("SELECT _id AS \"group_id\"," +
-                                            " name AS \"group_name\", " +
-                                            "start_date FROM groups " +
-                                            "JOIN students_in_groups " +
-                                            "ON groups._id = students_in_groups.group_id" +
-                                            " WHERE students_in_groups.student_id = ('%d');",
-                                            studentId);
+                            " name AS \"group_name\", " +
+                            "start_date FROM groups " +
+                            "JOIN students_in_groups " +
+                            "ON groups._id = students_in_groups.group_id" +
+                            " WHERE students_in_groups.student_id = ('%d');",
+                            studentId);
             ResultSet resultSet = statement.executeQuery(request);
             while (resultSet.next()) {
-               int groupId = resultSet.getInt("group_id");
-               String groupName = resultSet.getString("group_name");
-               String startDate = resultSet.getString("start_date");
-               groupList.add(new Group(groupId, groupName, startDate));
+                Group group = new Group();
+                group.setId(resultSet.getInt("group_id"));
+                group.setName(resultSet.getString("group_name"));
+                group.setStartDate(resultSet.getString("start_date"));
+                groupList.add(group);
             }
         }
         return groupList;

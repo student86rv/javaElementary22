@@ -56,12 +56,23 @@ public class Student {
         this.groups = groups;
     }
 
+//    @Override
+//    public String toString() {
+//        return "Student{" +
+//                "id=" + id +
+//                ", name='" + name + '\'' +
+//                ", age=" + age +
+//                '}';
+//    }
+
+
     @Override
     public String toString() {
         return "Student{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", age=" + age +
+                ", groups=" + groups.size() +
                 '}';
     }
 }
