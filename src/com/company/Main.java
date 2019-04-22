@@ -31,8 +31,9 @@ public class Main {
             storageDao.addGroup(java);
             storageDao.addGroup(cpp);
 
-            System.out.println(storageDao.getUser(3));
-            System.out.println(storageDao.getUser(3).getGroups());
+            System.out.println(storageDao.getUserByName("Max"));
+
+            System.out.println(storageDao.getUserByName("Max").getGroups());
 
         } catch (SQLException e) {
             e.printStackTrace();

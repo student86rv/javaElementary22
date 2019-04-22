@@ -96,9 +96,7 @@ public class StorageDao implements Storage {
             while (resultSet.next()) {
                 count = resultSet.getInt("count");
             }
-            if (student.getId() == 0) {
-                student.setId(count);
-            }
+            student.setId(count);
         }
     }
 
@@ -158,6 +156,22 @@ public class StorageDao implements Storage {
         return student;
     }
 
+    public Student getUserByName(String name) throws SQLException {
+        Student student = new Student();
+        try (Statement statement = connection.createStatement()) {
+            String request = String.format("SELECT * FROM students WHERE name = ('%s');", name);
+            ResultSet resultSet = statement.executeQuery(request);
+            while (resultSet.next()) {
+                int studentId = resultSet.getInt("_id");
+                student.setId(studentId);
+                student.setName(resultSet.getString("name"));
+                student.setAge(resultSet.getInt("age"));
+                student.setGroups(getGroupsByStudentId(studentId));
+            }
+        }
+        return student;
+    }
+
     @Override
     public List<Student> getAllUsers() throws SQLException {
         List<Student> students = new ArrayList<>();
@@ -173,7 +187,6 @@ public class StorageDao implements Storage {
         return students;
     }
 
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     private List<Group> getGroupsByStudentId(int studentId) throws SQLException {
         List<Group> groupList = new ArrayList<>();
         try (Statement statement = connection.createStatement()) {
@@ -183,14 +196,13 @@ public class StorageDao implements Storage {
                             "JOIN students_in_groups " +
                             "ON groups._id = students_in_groups.group_id" +
                             " WHERE students_in_groups.student_id = ('%d');",
-                            studentId);
+                    studentId);
             ResultSet resultSet = statement.executeQuery(request);
             while (resultSet.next()) {
-                Group group = new Group();
-                group.setId(resultSet.getInt("group_id"));
-                group.setName(resultSet.getString("group_name"));
-                group.setStartDate(resultSet.getString("start_date"));
-                groupList.add(group);
+                int id = resultSet.getInt("group_id");
+                String name = resultSet.getString("group_name");
+                String startDate = resultSet.getString("start_date");
+                groupList.add(new Group(id, name, startDate));
             }
         }
         return groupList;
